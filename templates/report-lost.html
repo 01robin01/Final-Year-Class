@@ -6,7 +6,11 @@ Report Lost Item
 {% endblock title %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/report-lost.css' %}">
+ <link rel="stylesheet" href="{% static 'css/report-found.css' %}">
+    <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
+
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock extra_css %}
 
 {% block content %}
@@ -118,3 +122,73 @@ Report Lost Item
   </div>
 </div>
 {% endblock content %}
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('select').select2({
+    width: '100%',
+    minimumResultsForSearch: 0,   
+    dropdownAutoWidth: true,
+    closeOnSelect: true,
+    placeholder: 'Start typing...'
+  });
+});
+</script>
+<script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
+
+
+<script>
+  const map = new maplibregl.Map({
+    container: 'map',
+    // Using a public OSM-based vector style
+    style: 'https://tiles.openfreemap.org/styles/bright', 
+    center: [85.3240, 27.7172], // Kathmandu
+    zoom: 15.5,
+    pitch: 45,    // Tilts the map for 3D view
+    bearing: -17, // Rotates the map slightly
+    antialias: true
+  });
+
+  // Add a marker that we can move
+  let marker = new maplibregl.Marker({ draggable: true })
+    .setLngLat([85.3240, 27.7172])
+    .addTo(map);
+
+  // Update hidden inputs when marker is dragged
+  function onDragEnd() {
+    const lngLat = marker.getLngLat();
+    document.getElementById('lat').value = lngLat.lat.toFixed(6);
+    document.getElementById('lng').value = lngLat.lng.toFixed(6);
+  }
+  marker.on('dragend', onDragEnd);
+
+  // Also update position on map click
+  map.on('click', (e) => {
+    marker.setLngLat(e.lngLat);
+    document.getElementById('lat').value = e.lngLat.lat.toFixed(6);
+    document.getElementById('lng').value = e.lngLat.lng.toFixed(6);
+  });
+
+  // Add 3D Building Layer after map loads
+  map.on('load', () => {
+    map.addLayer({
+      'id': '3d-buildings',
+      'source': 'openmaptiles', // Standard OSM source name in this style
+      'source-layer': 'building',
+      'type': 'fill-extrusion',
+      'minzoom': 15,
+      'paint': {
+        'fill-extrusion-color': '#aaa',
+        'fill-extrusion-height': ['get', 'render_height'],
+        'fill-extrusion-base': ['get', 'render_min_height'],
+        'fill-extrusion-opacity': 0.6
+      }
+    });
+  });
+</script>
+
+
+{% endblock extra_js %}
