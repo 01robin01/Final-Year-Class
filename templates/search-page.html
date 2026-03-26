@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/search-page.css' %}">
+{% endblock extra_css %}
+
+
+
+{% block content %}
+<!-- HEADER -->
+<section class="page-header">
+    <div class="container">
+        <h4 class="fw-semibold mb-1">Related Items</h4>
+        <p class="text-muted mb-0">Items similar to your search result</p>
+    </div>
+</section>
+
+<!-- CONTENT -->
+<section class="container my-4">
+
+    <!-- Selected Item -->
+    <div class="card selected-item shadow-sm mb-4">
+        <div class="card-body d-flex align-items-center gap-3">
+            <img src="https://images.unsplash.com/photo-1520975922284-6a36a4c38c1d"
+                 class="selected-img">
+            <div>
+                <h6 class="fw-semibold mb-1">Brown Leather Wallet</h6>
+                <small class="text-muted">
+                    Category: Wallet &nbsp; | &nbsp; City: Kathmandu
+                </small>
+                <span class="badge bg-danger-subtle text-danger ms-2">Lost</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex flex-wrap align-items-center gap-3">
+            <i class="bi bi-funnel text-muted"></i>
+
+            <select class="form-select filter-select">
+                <option>All Categories</option>
+            </select>
+
+            <select class="form-select filter-select">
+                <option>All Cities</option>
+            </select>
+
+            <select class="form-select filter-select">
+                <option>All Status</option>
+            </select>
+
+            <div class="ms-auto">
+                <select class="form-select filter-select">
+                    <option>Most Recent</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Grid -->
+    <div class="row g-4">
+
+        <!-- Card -->
+        <div class="col-md-4">
+            <div class="item-card">
+                <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee">
+                <div class="item-body">
+                    <h6>Blue Backpack</h6>
+                    <small>Category: Bag</small><br>
+                    <small>City: Kathmandu</small><br>
+                    <small>Posted: Jan 30, 2025</small>
+                    <span class="badge bg-success-subtle text-success float-end">Found</span>
+                </div>
+                <a href="#" class="btn btn-primary w-100">View Details</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="item-card">
+                <img src="https://images.unsplash.com/photo-1520975922284-6a36a4c38c1d">
+                <div class="item-body">
+                    <h6>Black Leather Wallet</h6>
+                    <small>Category: Wallet</small><br>
+                    <small>City: Lalitpur</small><br>
+                    <small>Posted: Jan 29, 2025</small>
+                    <span class="badge bg-success-subtle text-success float-end">Found</span>
+                </div>
+                <a href="#" class="btn btn-primary w-100">View Details</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="item-card">
+                <img src="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f">
+                <div class="item-body">
+                    <h6>Reading Glasses</h6>
+                    <small>Category: Glasses</small><br>
+                    <small>City: Lalitpur</small><br>
+                    <small>Posted: Jan 29, 2025</small>
+                    <span class="badge bg-success-subtle text-success float-end">Found</span>
+                </div>
+                <a href="#" class="btn btn-primary w-100">View Details</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="item-card">
+                <img src="https://images.unsplash.com/photo-1506399309177-3b43d83b7ac3">
+                <div class="item-body">
+                    <h6>Black Umbrella</h6>
+                    <small>Category: Umbrella</small><br>
+                    <small>City: Bhaktapur</small><br>
+                    <small>Posted: Jan 28, 2025</small>
+                    <span class="badge bg-success-subtle text-success float-end">Found</span>
+                </div>
+                <a href="#" class="btn btn-primary w-100">View Details</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="item-card">
+                <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9">
+                <div class="item-body">
+                    <h6>Samsung Phone</h6>
+                    <small>Category: Phone</small><br>
+                    <small>City: Kathmandu</small><br>
+                    <small>Posted: Jan 27, 2025</small>
+                    <span class="badge bg-success-subtle text-success float-end">Found</span>
+                </div>
+                <a href="#" class="btn btn-primary w-100">View Details</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="item-card">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9">
+                <div class="item-body">
+                    <h6>Gold Necklace</h6>
+                    <small>Category: Jewelry</small><br>
+                    <small>City: Pokhara</small><br>
+                    <small>Posted: Jan 27, 2025</small>
+                    <span class="badge bg-danger-subtle text-danger float-end">Lost</span>
+                </div>
+                <a href="#" class="btn btn-primary w-100">View Details</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Pagination -->
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center pagination-sm">
+            <li class="page-item disabled"><a class="page-link">Previous</a></li>
+            <li class="page-item active"><a class="page-link">1</a></li>
+            <li class="page-item"><a class="page-link">2</a></li>
+            <li class="page-item"><a class="page-link">Next</a></li>
+        </ul>
+    </nav>
+
+</section>
+{% endblock content %}
+
+{% block extra_js %}
+
+{% endblock extra_js %}
