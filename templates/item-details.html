@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/item-details.css' %}">
+{% endblock extra_css %}
+
+
+
+{% block content %}
+<div class="col-10 p-4">
+    <!-- HEADER -->
+    <section class="page-header">
+        <div class="container">
+            <h5 class="fw-semibold mb-1">Item Details</h5>
+            <p class="text-muted mb-0">Complete information about the selected item</p>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <main class="container my-4">
+
+        <!-- ITEM CARD -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+
+                <div class="row g-4">
+                    <!-- LEFT: IMAGES -->
+                    <div class="col-lg-5">
+
+                        <img src="https://images.unsplash.com/photo-1579014134953-1580d7f123f3?q=80&w=1169&auto=format&fit=crop"
+                            class="main-img mb-3 img img-thumbnail" alt="">
+
+
+                    </div>
+
+                    <!-- RIGHT: DETAILS -->
+                    <div class="col-lg-7">
+                        <h5 class="fw-semibold mb-2">Black Leather Wallet</h5>
+
+                        <span class="badge bg-danger-subtle text-danger mb-3">
+                            Lost
+                        </span>
+
+                        <ul class="item-meta">
+                            <li>
+                                <i class="bi bi-tag"></i>
+                                <strong>Category:</strong> Wallet & Cards
+                            </li>
+                            <li>
+                                <i class="bi bi-geo-alt"></i>
+                                <strong>Location:</strong>
+                                Kathmandu<br>
+                                <small class="text-muted">
+                                    Near Bhatbhateni Supermarket, Naxal
+                                </small>
+                            </li>
+                            <li>
+                                <i class="bi bi-calendar"></i>
+                                <strong>Posted Date:</strong>
+                                January 28, 2026
+                            </li>
+                            <li>
+                                <i class="bi bi-person"></i>
+                                <strong>Posted By:</strong>
+                                Rajesh Kumar
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold">
+                Item Description
+            </div>
+            <div class="card-body">
+                <p class="mb-0">
+                    I lost my black leather wallet on January 28th while traveling from
+                    Naxal to Thamel. The wallet contains my citizenship card,
+                    driving license, and several important business cards.
+                    It is a fold wallet with a small tear on the back side.
+                    There was approximately NPR 2,000 in cash inside.
+                    If you have found it, please contact me.
+                    This wallet has immense sentimental value to me
+                    as it was a gift from my late father.
+                </p>
+            </div>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold">
+                Next Steps
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    If you believe this item belongs to you, submit a claim with proof.
+                </p>
+
+                <div class="d-flex gap-3">
+
+                     {% if request.user == item.reported_by %}
+                        <p class="text-muted">You are viewing this item as a guest. <a href="{% url 'my_lost_items' %}">Click here</a> to view your reported items.</p>
+                    {% else %}
+                        <button class="btn btn-primary">
+                            <i class="bi bi-shield-check"></i>
+                            Claim This Item
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Search
+                    </button>
+                        
+                </div>
+            </div>
+        </div>
+
+        <!-- RELATED ITEMS -->
+        <div>
+            <h6 class="fw-semibold mb-3">Related Items</h6>
+
+            <div class="row g-4">
+
+                {% include 'components/card.html' with is_sensitive=True image_url="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0" item_name="Blue Backpack" location="Lalitpur" status="Found" view_url="#" claim_url="#" %}
+                {% include 'components/card.html' with image_url="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0" item_name="SmartPhone" location="Kathmandu" status="Lost" view_url="#" claim_url="#" %}
+                {% include 'components/card.html' with image_url="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0" item_name="Eyeglasses" location="Pokhara" status="Found" view_url="#" claim_url="#" %}
+
+            </div>
+        </div>
+</div>
+</main>

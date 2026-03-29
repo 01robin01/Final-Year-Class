@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from .models import Item, ItemImage
+from django.shortcuts import  redirect, render
+from .models import Category, Item, ItemImage
 from PIL import Image
 import imagehash
 

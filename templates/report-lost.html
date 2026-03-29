@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% load static %}
 
 {% block title %}
@@ -6,18 +7,20 @@ Report Lost Item
 {% endblock title %}
 
 {% block extra_css %}
- <link rel="stylesheet" href="{% static 'css/report-lost.css' %}">
+    <link rel="stylesheet" href="{% static 'css/report-lost.css' %}">
     <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
 
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+
 {% endblock extra_css %}
 
-{% block content %}
 {% block sidebar %}
-
-
 {% endblock sidebar %}
+
+{% block content %}
+
 <!-- PAGE CONTENT -->
 <div class="container my-5">
   <div class="page-wrapper">
@@ -27,71 +30,128 @@ Report Lost Item
       <div class="alert-icon mb-3">
         <i class="bi bi-exclamation-triangle-fill"></i>
       </div>
+
       <h3 class="fw-bold">Report Lost Item</h3>
       <p class="text-muted mb-4">
-        Help us help you find your lost item by providing as much detail as possible.
+        Help us help you find the owner of this item by providing as much detail as possible.
+        The more information you provide, the better chance of recovery.
       </p>
 
-      <!-- DIVIDER -->
       <hr class="section-divider">
     </div>
 
     <!-- FORM CARD -->
     <div class="form-card">
-       <form method="post" enctype="multipart/form-data">
+      <form method="post" enctype="multipart/form-data">
 
         {% csrf_token %}
+
+        <!-- OBJECT TITLE -->
         <div class="mb-3">
-          <label class="form-label">Object Title *</label>
-          <input type="text" class="form-control"
-            placeholder="e.g., iPhone 14 Pro, Black Leather Wallet, Blue Backpack">
+          <div class="row">
+            <div class="col-8">
+              <label class="form-label">Object Title *</label>
+              <input type="text" name="title" class="form-control"
+                placeholder="e.g., iPhone 14 Pro, Black Leather Wallet, Blue Backpack"
+                value="{{ item.title|default:'' }}"
+                >
+            </div>
+            <div class="col-4">
+              <label class="form-label ">Date Lost *</label>
+              <input type="datetime-local" name="event_at" class="form-control"
+              value="{{ item.event_at|date:'Y-m-d\\TH:i'|default:'' }}">
+            </div>
+          </div>
+          
+
+          
         </div>
 
+        <!-- CATEGORY & CITY -->
         <div class="row mb-3">
           <div class="col-md-6">
             <label class="form-label">Category *</label>
-            <select class="form-select">
+            <select class="form-select" name="category">
               <option selected disabled>Select a category</option>
-              <option>Electronics</option>
-              <option>Personal Items</option>
-              <option>Bags & Luggage</option>
-              <option>Keys & Accessories</option>
-              <option>Documents</option>
+              {% for cat in categories %}
+              <option value="{{ cat.id }}"
+              {% if cat.id == item.category.id %}
+              selected{% endif %}
+              >{{ cat }}</option>
+              {% endfor %}
             </select>
           </div>
 
           <div class="col-md-6">
             <label class="form-label">City *</label>
-             <input type="text" class="form-control" name="location_text" id="city_name" readonly>
+            <input type="text" class="form-control" name="location_text" id="city_name" readonly
+            value="{{ item.location_text|default:'' }}"
+             placeholder="Select location on map">
           </div>
         </div>
 
+        <!-- LOCATION -->
         <div class="mb-3">
-          <label class="form-label">Exact Address or Location *</label>
-          <input type="text" class="form-control"
-            placeholder="e.g., Central Park, Coffee Shop on Main Street">
+          <label class="form-label">Pin Location on Map</label>
+          <div id="map" style="height: 300px; border-radius: 8px;" class="border"></div>
+          <small class="text-muted">Click on the map to set the exact location.</small>
         </div>
 
+        <input type="hidden" name="latitude" id="lat" value="{{ item.latitude|default:'' }}">
+        <input type="hidden" name="longitude" id="lng" value="{{ item.longitude|default:'' }}">
+
         <div class="mb-3">
-          <label class="form-label">Upload Image</label>
+          <label class="form-label">Upload Images</label>
+
           <div class="upload-box text-center">
             <i class="bi bi-cloud-upload fs-3"></i>
-            <p class="mt-2 mb-1">Drop your image here, or browse</p>
-            <small class="text-muted">Supports JPG, JPEG, PNG (Max 2MB)</small><br>
-             <input type="file" name="images" class="d-none" id="upload" multiple accept="image/*">
-            <label for="upload" class="btn btn-primary btn-sm mt-2">Choose File</label>
+            <p class="mt-2 mb-1">Drop your images here, or browse to add</p>
+            <small class="text-muted">
+              JPG, PNG • Max 2MB each • Multiple allowed
+            </small><br>
+
+            <input
+              type="file"
+              name="images"
+              id="upload"
+              class="d-none"
+              multiple
+              accept="image/*"
+            >
+
+            <label for="upload" class="btn btn-primary btn-sm mt-2">
+              Choose Images
+            </label>
+
+            <!-- COUNT -->
+            <p class="mt-2 text-muted" id="imageCount">No images selected</p>
+
+            <!-- PREVIEW GRID -->
+            <div class="preview-grid mt-3" id="previewGrid"></div>
           </div>
         </div>
 
+
+
+        <!-- DESCRIPTION -->
         <div class="mb-4">
           <label class="form-label">Detailed Description *</label>
           <textarea class="form-control" rows="4"
-            placeholder="Provide color, brand, size, distinctive features, etc."></textarea>
+          name="description"
+            placeholder="Please provide a detailed description including color, size, brand, distinctive features, and any other relevant details that would help identify the item...">{{ item.description|default:'' }}</textarea>
         </div>
 
+        <!-- SENSITIVE INFORMATION -->
+        <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" name="is_sensitive" id="sensitiveInfo" {{ item.is_sensitive|yesno:"checked," }}>
+          <label class="form-check-label" for="sensitiveInfo">This item contains sensitive information.</label>
+          <small>The item image will be blurred</small>
+        </div>
+
+        <!-- FOOTER -->
         <div class="d-flex justify-content-between align-items-center">
           <small class="text-muted">All fields marked with * are required</small>
-          <button class="btn btn-primary">
+          <button class="btn btn-primary" type="submit">
             <i class="bi bi-send"></i> Submit Report
           </button>
         </div>
@@ -99,7 +159,7 @@ Report Lost Item
       </form>
     </div>
 
-    <!-- TIPS BOX -->
+    <!-- TIPS -->
     <div class="tips-box mt-5">
       <div class="d-flex gap-2">
         <i class="bi bi-info-circle-fill text-primary fs-5"></i>
@@ -107,9 +167,9 @@ Report Lost Item
           <h6 class="fw-bold mb-2">Tips for Better Results</h6>
           <ul class="mb-0">
             <li>Be as specific as possible with your description</li>
-            <li>Include unique identifying features</li>
+            <li>Include unique identifying features or markings</li>
             <li>Upload a clear, recent photo if available</li>
-             <li>Provide the exact location where you lost the item</li>
+            <li>Provide the exact location where you lost the item</li>
           </ul>
         </div>
       </div>
@@ -117,7 +177,12 @@ Report Lost Item
 
   </div>
 </div>
+
+
 {% endblock content %}
+
+
+
 
 
 {% block extra_js %}

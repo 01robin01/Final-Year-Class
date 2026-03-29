@@ -12,9 +12,10 @@ from io import BytesIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from .utils import validate_image_size
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 
 
-
+@login_required
 def report_lost(request):
 
     if request.method == 'POST':
@@ -95,7 +96,7 @@ def report_lost(request):
         return redirect('my_lost_items')
 
         return render(request, 'report-lost.html')
-    
+    @login_required
     def my_lost_items(request):
         items = Item.objects.filter(
         reported_by=request.user,
@@ -107,4 +108,54 @@ def report_lost(request):
         context = {
             'page_obj': page_obj
         }
-        return render(request, 'my-lost-items.html', context) 
+    return render(request, 'my-lost-items.html', context)
+
+
+@login_required
+def update_item(request, item_id):
+    item = Item.objects.get(id=item_id)
+    categories = Category.objects.all()
+    if request.method == 'POST':
+        item.title = request.POST.get("title", item.title)
+        item.description = request.POST.get("description", item.description)
+        category_id = request.POST.get("category", item.category.id)
+        item.category = Category.objects.get(id=category_id)
+
+        item.location_text = request.POST.get("location_text", item.location_text)
+        item.latitude = request.POST.get("latitude", item.latitude)
+        item.longitude = request.POST.get("longitude", item.longitude)
+        item.event_at = request.POST.get("event_at", item.event_at)
+        item.is_sensitive = bool(request.POST.get("is_sensitive", item.is_sensitive))
+        item.save()
+        
+        messages.success(request, "Item updated successfully!")
+        return redirect("my_lost_items")
+
+    context = {
+        "item": item,
+        "categories": categories
+    }
+
+    return render(request, "report-lost.html", context)
+
+
+@login_required
+def delete_item(request, item_id):
+    item = Item.objects.get(id=item_id)
+    if request.method == 'POST':
+        item.delete()
+        messages.success(request, "Item deleted successfully!")
+        return redirect("my_lost_items")
+
+    context = {
+        "item": item
+    }
+    return render(request, "confirm-delete.html", context)
+
+@login_required
+def lost_item_detail(request, item_id):
+    item = Item.objects.get(id=item_id)
+    context = {
+        "item": item
+    }
+    return render(request, "item-details.html", context)

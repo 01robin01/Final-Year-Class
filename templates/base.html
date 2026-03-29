@@ -46,7 +46,13 @@
   </ul>
 
   <div class="logout">
-    <i class="bi bi-box-arrow-left"></i> Logout
+     <form action="{% url 'logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger w-100">
+        
+        <i class="bi bi-box-arrow-left"></i> Logout
+      </button>
+    </form>
   </div>
 </aside>
 

@@ -50,11 +50,12 @@ Report Found Item
             <div class="col-8">
               <label class="form-label">Object Title *</label>
               <input type="text" name="title" class="form-control"
-                placeholder="e.g., iPhone 14 Pro, Black Leather Wallet, Blue Backpack">
+                 placeholder="e.g., iPhone 14 Pro, Black Leather Wallet, Blue Backpack"
+                value="{{ item.title|default:'' }}">
             </div>
             <div class="col-4">
               <label class="form-label ">Date Found *</label>
-              <input type="datetime-local" name="event_at" class="form-control">
+             <input type="datetime-local" name="event_at" class="form-control" value="{{ item.event_at|date:'Y-m-d\TH:i'|default:'' }}">
             </div>
           </div>
           
@@ -69,14 +70,19 @@ Report Found Item
             <select class="form-select" name="category">
               <option selected disabled>Select a category</option>
               {% for cat in categories %}
-              <option value="{{ cat.id }}">{{ cat }}</option>
+           <option value="{{ cat.id }}"
+              {% if cat.id == item.category.id %}
+              
+              selected
+              {% endif %}
+              >{{ cat }}</option>
               {% endfor %}
             </select>
           </div>
 
           <div class="col-md-6">
             <label class="form-label">City *</label>
-            <input type="text" class="form-control" name="location_text" id="city_name" readonly>
+           <input type="text" class="form-control" name="location_text" id="city_name" readonly value="{{ item.location_text|default:'' }}">
           </div>
         </div>
 
@@ -87,8 +93,8 @@ Report Found Item
           <small class="text-muted">Click on the map to set the exact location.</small>
         </div>
 
-        <input type="hidden" name="latitude" id="lat">
-        <input type="hidden" name="longitude" id="lng">
+       <input type="hidden" name="latitude" id="lat" value="{{ item.latitude|default:'' }}">
+        <input type="hidden" name="longitude" id="lng" value="{{ item.longitude|default:'' }}">
 
         <!-- UPLOAD -->
         <div class="mb-3">
@@ -126,12 +132,12 @@ Report Found Item
           <label class="form-label">Detailed Description *</label>
           <textarea class="form-control" rows="4"
           name="description"
-            placeholder="Please provide a detailed description including color, size, brand, distinctive features, and any other relevant details that would help identify the item..."></textarea>
+         placeholder="Please provide a detailed description including color, size, brand, distinctive features, and any other relevant details that would help identify the item...">{{ item.description|default:'' }}</textarea>
         </div>
 
         <!-- SENSITIVE INFORMATION -->
         <div class="mb-3 form-check">
-          <input type="checkbox" class="form-check-input" name="is_sensitive" id="sensitiveInfo">
+       <input type="checkbox" class="form-check-input" name="is_sensitive" id="sensitiveInfo" {{ item.is_sensitive|yesno:"checked," }}>
           <label class="form-check-label" for="sensitiveInfo">This item contains sensitive information.</label>
           <small>The item image will be blurred</small>
         </div>
@@ -139,8 +145,8 @@ Report Found Item
         <!-- FOOTER -->
         <div class="d-flex justify-content-between align-items-center">
           <small class="text-muted">All fields marked with * are required</small>
-          <button class="btn btn-primary" type="submit">
-            <i class="bi bi-send"></i> Submit Report
+       <button class="btn btn-primary" type="submit">ubmit Report
+            <i class="bi bi-send"></i> 
           </button>
         </div>
 

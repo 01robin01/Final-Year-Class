@@ -23,7 +23,7 @@
       <!-- TABS -->
       <div class="tabs mb-3">
         <a href="my-lost-items.html"><button class="tab active">
-          My Lost Posts <span>8</span>
+         My Lost Posts <span>{{page_object.count}}</span>
         </button></a>
         <a href="my-found-items.html"><button class="tab">
           My Found Posts <span>5</span>
@@ -68,16 +68,15 @@
               </p>
 
               <div class="item-actions">
-                <button class="btn btn-light btn-sm">
+                <a href="{% url 'update_item' item.id %}" class="btn btn-light btn-sm">
                   <i class="bi bi-pencil"></i> Edit
-                </button>
-                <button class="btn btn-light btn-sm text-danger">
+                </a>
+                <a href="{% url 'delete_item' item.id %}" class="btn btn-light btn-sm text-danger">
                   <i class="bi bi-trash"></i> Delete
-                </button>
-                <button class="btn btn-primary btn-sm">
+                 </a>
+                <a href="{% url 'view_item' item.id %}" class="btn btn-primary btn-sm">
                   <i class="bi bi-eye"></i> View
-                </button>
-              </div>
+                
             </div>
           </div>
         </div>
