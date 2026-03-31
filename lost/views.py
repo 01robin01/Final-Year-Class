@@ -214,8 +214,10 @@ def delete_item_image(request, image_id):
 
 @login_required
 def lost_item_detail(request, item_id):
-    item = Item.objects.get(id=item_id)
+    item = get_object_or_404(Item, id=item_id)
+    related_items = Item.objects.filter(category=item.category).exclude(id=item.id).order_by('-reported_at')[:3]
     context = {
-        "item": item
+        "item": item,
+        "related_items": related_items
     }
     return render(request, "item-details.html", context)

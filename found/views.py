@@ -24,11 +24,13 @@ def report_found(request):
         is_sensitive = request.POST.get('is_sensitive') == 'on'
         event_at = request.POST.get('event_at')
         images = request.FILES.getlist('images')
+        
         if len(images) > 10:
             messages.error(request, "You can only upload up to 10 images.")
             return redirect('report_found')
+            
         item = Item.objects.create(
-             item_type='found',
+            item_type='found',
             title=title,
             description=description,
             category=category,
@@ -39,10 +41,11 @@ def report_found(request):
             latitude=lat,
             is_sensitive=is_sensitive
         )
-        
-        
-        
-        if image.size > settings.MAX_IMAGE_SIZE_MB * 1024 * 1024:
+
+        for image in images:
+
+          
+            if image.size > settings.MAX_IMAGE_SIZE_MB * 1024 * 1024:
                 messages.error(
                     request,
                     f"{image.name} exceeds 10MB limit."
@@ -92,13 +95,11 @@ def report_found(request):
             request,
             'Found item reported successfully.'
         )
-        
         return redirect('my_found_items')
-    
     return render(request, 'report-found.html')
 
 
- 
+
 
 
 def my_found_items(request):
@@ -113,6 +114,7 @@ def my_found_items(request):
         'page_obj': page_obj
     }
     return render(request, 'my-found-items.html', context)
+
 
 @login_required
 def update_item(request, item_id):
@@ -191,3 +193,13 @@ def delete_item_image(request, image_id):
         messages.success(request, "Image deleted successfully!")
         return redirect("update_found_item", item_id=item_id)
     return redirect("my_found_items")
+
+@login_required
+def found_item_detail(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+    related_items = Item.objects.filter(category=item.category).exclude(id=item.id).order_by('-reported_at')[:3]
+    context = {
+        "item": item,
+        "related_items": related_items
+    }
+    return render(request, "item-details.html", context)

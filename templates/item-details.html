@@ -26,43 +26,55 @@
                 <div class="row g-4">
                     <!-- LEFT: IMAGES -->
                     <div class="col-lg-5">
-
-                        <img src="https://images.unsplash.com/photo-1579014134953-1580d7f123f3?q=80&w=1169&auto=format&fit=crop"
-                            class="main-img mb-3 img img-thumbnail" alt="">
+                            {% if item.images.all %}
+                            <!-- Main Display Image -->
+                            <div class="main-image-container mb-3 text-center">
+                                <img id="mainImage" src="{{ item.images.first.image.url }}" class="img-fluid rounded border shadow-sm" alt="{{ item.title }}" style="max-height: 400px; width: 100%; object-fit: contain;">
+                            </div>
+                            
+                            <!-- Thumbnail Gallery -->
+                            {% if item.images.count > 1 %}
+                            <div class="thumbnail-gallery d-flex gap-2 overflow-auto py-2" style="scrollbar-width: thin;">
+                                {% for img in item.images.all %}
+                                <img src="{{ img.image.url }}" class="img-thumbnail cursor-pointer thumbnail-img {% if forloop.first %}border-primary border-2{% endif %}" alt="Thumbnail" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" onclick="changeMainImage(this, '{{ img.image.url }}')">
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <!-- Fallback Image -->
+                            <div class="main-image-container mb-3 text-center bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px; border: 1px dashed #ccc;">
+                                <span class="text-muted"><i class="bi bi-image" style="font-size: 3rem;"></i><br>No Image Available</span>
+                            </div>
+                        {% endif %}
 
 
                     </div>
 
                     <!-- RIGHT: DETAILS -->
                     <div class="col-lg-7">
-                        <h5 class="fw-semibold mb-2">Black Leather Wallet</h5>
-
-                        <span class="badge bg-danger-subtle text-danger mb-3">
-                            Lost
+                          <h5 class="fw-semibold mb-2">{{ item.title }}</h5>
+                            <span class="badge {% if item.item_type == 'lost' %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %} mb-3 text-uppercase">
+                            {{ item.item_type }}
                         </span>
-
-                        <ul class="item-meta">
-                            <li>
-                                <i class="bi bi-tag"></i>
-                                <strong>Category:</strong> Wallet & Cards
+                             <ul class="item-meta list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-tag text-muted me-2"></i>
+                                <strong>Category:</strong> {{ item.category.name }}
                             </li>
-                            <li>
-                                <i class="bi bi-geo-alt"></i>
+                          <li class="mb-2">
+                                <i class="bi bi-geo-alt text-muted me-2"></i>
                                 <strong>Location:</strong>
-                                Kathmandu<br>
-                                <small class="text-muted">
-                                    Near Bhatbhateni Supermarket, Naxal
-                                </small>
+                                {{ item.location_text }}
                             </li>
-                            <li>
-                                <i class="bi bi-calendar"></i>
-                                <strong>Posted Date:</strong>
-                                January 28, 2026
+                            <li class="mb-2">
+                                <i class="bi bi-calendar text-muted me-2"></i>
+                                <strong>Date:</strong>
+                                {{ item.event_at|date:"F j, Y, g:i a" }}
                             </li>
-                            <li>
-                                <i class="bi bi-person"></i>
+                          <li class="mb-2">
+                                <i class="bi bi-person text-muted me-2"></i>
                                 <strong>Posted By:</strong>
-                                Rajesh Kumar
+                               {{ item.reported_by.get_full_name|default:item.reported_by.username }}
                             </li>
                         </ul>
                     </div>
@@ -78,14 +90,7 @@
             </div>
             <div class="card-body">
                 <p class="mb-0">
-                    I lost my black leather wallet on January 28th while traveling from
-                    Naxal to Thamel. The wallet contains my citizenship card,
-                    driving license, and several important business cards.
-                    It is a fold wallet with a small tear on the back side.
-                    There was approximately NPR 2,000 in cash inside.
-                    If you have found it, please contact me.
-                    This wallet has immense sentimental value to me
-                    as it was a gift from my late father.
+                   {{ item.description|linebreaksbr }}
                 </p>
             </div>
         </div>
@@ -120,16 +125,41 @@
         </div>
 
         <!-- RELATED ITEMS -->
+        {% if related_items %}
         <div>
             <h6 class="fw-semibold mb-3">Related Items</h6>
 
             <div class="row g-4">
 
-                {% include 'components/card.html' with is_sensitive=True image_url="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0" item_name="Blue Backpack" location="Lalitpur" status="Found" view_url="#" claim_url="#" %}
-                {% include 'components/card.html' with image_url="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0" item_name="SmartPhone" location="Kathmandu" status="Lost" view_url="#" claim_url="#" %}
-                {% include 'components/card.html' with image_url="https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0" item_name="Eyeglasses" location="Pokhara" status="Found" view_url="#" claim_url="#" %}
-
+               {% for related_item in related_items %}
+                    {% if related_item.item_type == 'lost' %}
+                        {% url 'view_item' related_item.id as item_url %}
+                    {% else %}
+                        {% url 'view_found_item' related_item.id as item_url %}
+                    {% endif %}
+                    {% include 'components/card.html' with is_sensitive=related_item.is_sensitive image_url=related_item.images.first.image.url item_name=related_item.title location=related_item.location_text status=related_item.item_type|title view_url=item_url claim_url='#' %}
+                {% endfor %}
             </div>
         </div>
+         {% endif %}
 </div>
 </main>
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    function changeMainImage(thumbnailEl, imageUrl) {
+        // Update main image src
+        document.getElementById('mainImage').src = imageUrl;
+        
+        // Remove active border from all thumbnails
+        document.querySelectorAll('.thumbnail-img').forEach(function(img) {
+            img.classList.remove('border-primary', 'border-2');
+        });
+        
+        // Add active border to clicked thumbnail
+        thumbnailEl.classList.add('border-primary', 'border-2');
+    }
+</script>
+{% endblock extra_js %}
