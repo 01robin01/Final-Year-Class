@@ -3,8 +3,10 @@ from django.shortcuts import render
 from .views import * 
 # from django.contrib import admin
 
-urlpatterns = [ 
-    path('',index, name='landing_page'), 
+urlpatterns = [
+    path('',index, name='landing_page'),
+    path('search/',search, name='search_page'),
+    path('item-details/<int:id>/',item_details, name='item_details'),
     path('admin-dashboard/',lambda request: render(request, 'admin-dashboard.html'), name='admin_dashboard'),
     path('dashboard/',lambda request: render(request, 'dashboard.html'), name='user_dashboard'),
     path('admin-lost/',lambda request: render(request, 'admin-lost.html'), name='admin_lost'),  

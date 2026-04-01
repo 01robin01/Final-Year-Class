@@ -2,6 +2,7 @@ from django.db import models
 from accounts.models import CustomUser as User
 from django.utils import timezone
 from .managers import ItemManager
+from django.urls import reverse
 
 
 # --------------------
@@ -9,7 +10,7 @@ from .managers import ItemManager
 # --------------------
 class Category(models.Model):
     name = models.CharField(max_length=100)
-   parent = models.ForeignKey( "self", null=True, blank=True, related_name="children", on_delete=models.CASCADE)
+    parent = models.ForeignKey( "self", null=True, blank=True, related_name="children", on_delete=models.CASCADE)
    
    
 def __str__(self):
@@ -81,6 +82,8 @@ class Item(models.Model):
         self.is_deleted=False
         self.save()
 
+    def get_absolute_url(self):
+        return reverse("item_details", kwargs={"id": self.pk})
 
 # --------------------
 # ITEM IMAGES
@@ -91,6 +94,9 @@ class ItemImage(models.Model):
     perceptual_hash = models.CharField(max_length=64, blank=True)    #Like Hashing but more visual where similar images result in similar hashes
     created_at = models.DateTimeField(auto_now_add=True)
 
+
+def __str__(self):
+        return f"Image for {self.item.title}"
 
 # --------------------
 # MATCHES (CORE LOGIC)

@@ -62,5 +62,12 @@ def search(request):
         }
 
         return render(request, "search-page.html", context,status=201)
+    
+    def item_details(req,id):
+        context = {
+        'item':Item.objects.get(id=id),
+        'related_items': Item.objects.filter(category=Item.objects.get(id=id).category).exclude(id=id)[:5]
+    }
+        return render(req,'item-details.html',context)
 
 

@@ -74,8 +74,7 @@
 
        {% for item in items %}
       {% with img=item.images.first.image %}
-      {% include 'components/card.html' with image_url=img.url item_name=item.title status=item.item_type location=item.location_text view_url="#" claim_url="#" %}
-      {% endwith %}
+      {% include 'components/card.html' with image_url=img.url item_name=item.title status=item.item_type location=item.location_text view_url=item.get_absolute_url claim_url="#" %}      {% endwith %}
       {% endfor %}
 
            {% include 'components/card.html' with image_url="/media/images/brown leather wallet.jpg" item_name="Brown Leather Wallet" status="Found" location="Thamel, Kathmandu" view_url="#" claim_url="#" %}
