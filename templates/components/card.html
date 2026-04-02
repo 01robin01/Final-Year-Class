@@ -1,19 +1,23 @@
 <div class="col-md-3 d-flex">
-  <div class="col-lg-3 col-md-3 d-flex col-sm-8">
-        <div class="card w-100 h-100 d-flex flex-column">
-
+ <div class="col-lg-3  col-sm-8 col-md-4 item" data-status="{{ item.item_type }}">
+        <div class="card w-100 h-100 d-flex flex-column ">
           <div class="ratio ratio-4x3">
-            <img src="{{ image_url }}" alt="{{ item_name }}" class="w-100 h-100 object-fit-contain rounded-top">
+             {% if item.images.first.is_private %}
+            <img src="data:image/jpeg;base64,{{ item.images.first.base64_image }}" alt="{{ item.title }}" class="w-100 h-100 object-fit-contain rounded-top" >
+            {% else %}
+            <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}" class="w-100 h-100 object-fit-contain rounded-top" >
+            {% endif %}
           </div>
 
           <div class="card-body text-center d-flex flex-column">
-            <span class="badge {% if status == 'Found' %}bg-success{% else %}bg-danger{% endif %} mb-2">{{ status }}</span>
-            <h6>{{ item_name }}</h6>
-            <p class="text-muted small">{{ location }}</p>
+            
+             <span class="badge {% if item.item_type == 'found' %}bg-success{% else %}bg-danger{% endif %} mb-2">{{ item.item_type|title }}</span>
+            <h6>{{ item.title }}</h6>
+            <p class="text-muted small">{{ item.location_text }}</p>
 
             <div class="d-flex gap-2 mt-auto">
-              <a class="btn btn-outline-primary btn-sm w-50" href="{{ view_url }}">View</a>
-              <a class="btn btn-primary btn-sm w-50" href="{{ claim_url }}">Claim</a>
+              <a class="btn btn-outline-primary btn-sm w-50" href="{% url 'view_item' item.id %}">View</a>
+              <a class="btn btn-primary btn-sm w-50" href="{% url 'claim_item' item.id %}">Claim</a>
             </div>
           </div>
 

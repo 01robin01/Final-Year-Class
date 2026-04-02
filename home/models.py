@@ -90,7 +90,10 @@ class Item(models.Model):
 # --------------------
 class ItemImage(models.Model):
     item = models.ForeignKey(Item, related_name="images", on_delete=models.CASCADE)
+    is_private = models.BooleanField(default=False)
+    
     image = models.ImageField(upload_to="items/")
+    base64_image = models.TextField(blank=True)  # Store base64 version for sensitive images
     perceptual_hash = models.CharField(max_length=64, blank=True)    #Like Hashing but more visual where similar images result in similar hashes
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -98,6 +101,24 @@ class ItemImage(models.Model):
 def __str__(self):
         return f"Image for {self.item.title}"
 
+def save(self,*args,**kwargs):
+        if self.is_private and not self.base64_image:
+            import base64
+            from io import BytesIO
+            from PIL import Image,ImageFilter
+
+            img = Image.open(self.image)
+
+            blurred = img.filter(ImageFilter.GaussianBlur(radius=10))
+            buffer = BytesIO()
+            blurred.save(buffer, format="JPEG")
+            encoded = base64.b64encode(buffer.getvalue()).decode()
+            self.base64_image = encoded
+        super().save(*args,**kwargs)
+
+def delete(self,*args,**kwargs):
+        self.image.delete(save=False)
+        super().delete(*args,**kwargs)
 # --------------------
 # MATCHES (CORE LOGIC)
 # --------------------

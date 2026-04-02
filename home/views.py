@@ -1,40 +1,23 @@
-from django.shortcuts import  redirect, render
+
+from django.shortcuts import redirect, render
 from .models import Category, Item, ItemImage
 from PIL import Image
+from django.contrib import messages
 import imagehash
 
 def index(request):
-    
     items = (
         Item.objects
         .prefetch_related('images')
         .order_by('-id')[:10]
     )
 
-  
-    if not items:
-        items = [
-            {
-                "title": "Lost Wallet",
-                "location": "Kathmandu",
-                "status": "Lost",
-                "images": []
-            },
-            {
-                "title": "Found Phone",
-                "location": "Lalitpur",
-                "status": "Found",
-                "images": []
-            }
-        ]
 
     context = {
         "items": items
     }
 
-
     return render(request, "Index.html", context)
-
 
 def search(request):
     if request.method == 'POST':
@@ -54,7 +37,7 @@ def search(request):
             results = results | image_results # type: ignore
             print("Image Results:", image_results)
 
-
+        
 
         context = {
             "query": query,
@@ -62,12 +45,22 @@ def search(request):
         }
 
         return render(request, "search-page.html", context,status=201)
-    
-    def item_details(req,id):
-        context = {
+
+
+
+def item_details(req,id):
+    context = {
         'item':Item.objects.get(id=id),
         'related_items': Item.objects.filter(category=Item.objects.get(id=id).category).exclude(id=id)[:5]
     }
-        return render(req,'item-details.html',context)
+    return render(req,'item-details.html',context)
 
 
+def dashboard(request):
+    lost_items = Item.objects.filter(item_type='lost', is_deleted=False)
+    found_items = Item.objects.filter(item_type='found', is_deleted=False)
+    context = {
+        'lost_items': lost_items,
+        'found_items': found_items
+    }
+    return render(request, 'dashboard.html',context)

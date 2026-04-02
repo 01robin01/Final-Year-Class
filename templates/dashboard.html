@@ -26,22 +26,10 @@
       <!-- ITEMS GRID -->
       <div class="row g-4">
 
-        <!-- CARD 1 -->
-        <div class="col-md-4 item" data-status="lost">
-          <div class="card item-card">
-            <img src="/media/images/brown leather wallet.jpg" class="card-img-top">
-            <div class="card-body">
-              <span class="badge bg-danger">Lost</span>
-              <h6 class="mt-2">Black Leather Wallet</h6>
-              <p class="small text-muted">
-                <i class="bi bi-tag"></i> Personal Items <br>
-                <i class="bi bi-geo-alt"></i> Central Park, NY
-              </p>
-              <button class="btn btn-primary w-100">View Details</button>
-            </div>
-          </div>
-        </div>
-
+        {% for item in lost_items %}
+          {% include 'components/card.html' with item=item %}
+        {% endfor %}
+{% comment %} 
         <!-- CARD 2 -->
         <div class="col-md-4 item" data-status="lost">
           <div class="card item-card">
@@ -72,23 +60,12 @@
               <button class="btn btn-primary w-100">View Details</button>
             </div>
           </div>
-        </div>
+        </div> {% endcomment %}
 
         <!-- FOUND ITEM EXAMPLE -->
-        <div class="col-md-4 item" data-status="found">
-          <div class="card item-card">
-            <img src="/media/images/car keys.jpg" class="card-img-top">
-            <div class="card-body">
-              <span class="badge bg-success">Found</span>
-              <h6 class="mt-2">Car Keys</h6>
-              <p class="small text-muted">
-                <i class="bi bi-tag"></i> Accessories <br>
-                <i class="bi bi-geo-alt"></i> Parking Area
-              </p>
-              <button class="btn btn-primary w-100">View Details</button>
-            </div>
-          </div>
-        </div>
+        {% for item in found_items %}
+          {% include 'components/card.html' with item=item %}
+        {% endfor %}
 
       </div>
     </main>

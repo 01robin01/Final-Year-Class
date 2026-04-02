@@ -30,14 +30,25 @@
                             {% if item.images.all %}
                             <!-- Main Display Image -->
                             <div class="main-image-container mb-3 text-center">
+                                 {% if item.images.first.is_private %}
+                                <img id="mainImage" src="data:image/jpeg;base64,{{ item.images.first.base64_image }}" class="img-fluid rounded border shadow-sm" alt="{{ item.title }}" style="max-height: 400px; width: 100%; object-fit: contain;">
+                                {% else %}
+                                
                                 <img id="mainImage" src="{{ item.images.first.image.url }}" class="img-fluid rounded border shadow-sm" alt="{{ item.title }}" style="max-height: 400px; width: 100%; object-fit: contain;">
+                                  {% endif %}
                             </div>
                             
                             <!-- Thumbnail Gallery -->
                             {% if item.images.count > 1 %}
                             <div class="thumbnail-gallery d-flex gap-2 overflow-auto py-2" style="scrollbar-width: thin;">
                                 {% for img in item.images.all %}
+                                {% if img.is_private %}
+                                this is private
+                                <img src="data:image/jpeg;base64,{{ img.base64_image }}" class="img-thumbnail cursor-pointer thumbnail-img {% if forloop.first %}border-primary border-2{% endif %}" alt="Thumbnail" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" onclick="changeMainImage(this, 'data:image/jpeg;base64,{{ img.base64_image }}')">
+                                {% else %}
+                                
                                 <img src="{{ img.image.url }}" class="img-thumbnail cursor-pointer thumbnail-img {% if forloop.first %}border-primary border-2{% endif %}" alt="Thumbnail" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" onclick="changeMainImage(this, '{{ img.image.url }}')">
+                                 {% endif %}
                                 {% endfor %}
                             </div>
                             {% endif %}
@@ -136,7 +147,7 @@
                     {% else %}
                         {% url 'view_found_item' related_item.id as item_url %}
                     {% endif %}
-                    {% include 'components/card.html' with is_sensitive=related_item.is_sensitive image_url=related_item.images.first.image.url item_name=related_item.title location=related_item.location_text status=related_item.item_type|title view_url=item_url claim_url='#' %}
+                  {% include 'components/card.html' with item=related_item %}
                 {% endfor %}
             </div>
         </div>

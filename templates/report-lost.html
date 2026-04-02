@@ -246,7 +246,7 @@ $(document).ready(function() {
   map.on('click', (e) => {
     marker.setLngLat(e.lngLat);
     document.getElementById('lat').value = e.lngLat.lat.toFixed(6);
-    document.getElementById('lng').value = e.lngLat.lng.toFixed(6);
+    document.getElementById('city_name').removeAttribute("readonly"); // Placeholder, ideally use reverse geocoding here
   });
 
   // Add 3D Building Layer after map loads

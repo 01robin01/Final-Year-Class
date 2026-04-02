@@ -20,11 +20,11 @@
 
       <!-- TABS -->
       <div class="tabs mb-3">
-        <a href="{% url "my_lost_items" %}"><button class="tab ">
-          My Lost Posts <span>8</span>
+        <a href="{% url 'my_lost_items' %}"><button class="tab ">
+          My Lost Posts <span>{{ my_lost_items_count }}</span>
         </button></a>
-        <a href="{% url "my_found_items" %}"><button class="tab active">
-          My Found Posts <span>5</span>
+         <a href="{% url 'my_found_items' %}"><button class="tab active">
+          My Found Posts <span>{{ my_found_items_count }}</span>
         </button>
         </a>
       </div>

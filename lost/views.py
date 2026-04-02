@@ -87,6 +87,7 @@ def report_lost(request):
 
                 ItemImage.objects.create(
                     item=item,
+                    is_private=is_sensitive,
                     perceptual_hash=str(phash)
                 )
                 
@@ -104,24 +105,28 @@ def report_lost(request):
         return redirect('my_lost_items')
 
         return render(request, 'report-lost.html')
-    @login_required
-    def my_lost_items(request):
-        items = Item.objects.filter(
+@login_required
+def my_lost_items(request):
+    items = Item.objects.filter(
         reported_by=request.user,
         item_type='lost'
-        ).order_by('-reported_at')
-        paginator = Paginator(items, 3)  # Show 3 items per page
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        context = {
-            'page_obj': page_obj
-        }
+    ).order_by('-reported_at')
+    paginator = Paginator(items, 3)  # Show 3 items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        
+        'page_obj': page_obj,
+        'my_lost_items_count': items.count(),
+        'my_found_items_count': Item.objects.filter(reported_by=request.user, item_type='found').count()
+    }
     return render(request, 'my-lost-items.html', context)
-
 
 @login_required
 def update_item(request, item_id):
     item = Item.objects.get(id=item_id)
+    if not item.reported_by == request.user:
+        return HttpResponseForbidden("You are not allowed to edit this item.")
     categories = Category.objects.all()
     if request.method == 'POST':
         item.title = request.POST.get("title", item.title)
@@ -190,6 +195,8 @@ def update_item(request, item_id):
 @login_required
 def delete_item(request, item_id):
     item = Item.objects.get(id=item_id)
+    if not item.reported_by == request.user:
+        return HttpResponseForbidden("You are not allowed to delete this item.")
     if request.method == 'POST':
         item.delete()
         messages.success(request, "Item deleted successfully!")
@@ -223,3 +230,15 @@ def lost_item_detail(request, item_id):
         "related_items": related_items
     }
     return render(request, "item-details.html", context)
+
+def claim_item(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+    if request.method == 'POST':
+        # Here you would typically create a Claim object or send a notification to the item's reporter
+        messages.success(request, "Claim request sent to the item's reporter!")
+        return redirect("view_item", item_id=item.id)
+
+    context = {
+        "item": item
+    }
+    return render(request, "claim.html", context)

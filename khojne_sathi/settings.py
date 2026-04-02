@@ -67,7 +67,7 @@ ROOT_URLCONF = 'khojne_sathi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -163,3 +163,6 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 MAX_IMAGE_SIZE_MB = 2
 MAX_RESOLUTION = (1600, 1600)
+
+
+LOGIN_URL='/account/login/'

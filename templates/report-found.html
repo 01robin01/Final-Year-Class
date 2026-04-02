@@ -42,7 +42,8 @@ Report Found Item
 
     <!-- FORM CARD -->
     <div class="form-card">
-      <form method="post">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
 
         <!-- OBJECT TITLE -->
         <div class="mb-3">
@@ -108,7 +109,7 @@ Report Found Item
                   {% for img in item.images.all %}
                   <div class="position-relative" style="width: 100px; height: 100px;">
                       <img src="{{ img.image.url }}" class="img-thumbnail w-100 h-100 object-fit-cover" alt="Item Image">
-                      <button type="submit" formaction="{% url 'delete_found_item_image' img.id %}" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-1" style="line-height: 1; width: 24px; height: 24px;" title="Delete image" formnovalidate>
+                          <button type="submit" formaction="{% url 'delete_item_image' img.id %}" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle p-1" style="line-height: 1; width: 24px; height: 24px;" title="Delete image" formnovalidate>
                           <i class="bi bi-x"></i>
                       </button>
                   </div>
@@ -163,9 +164,8 @@ Report Found Item
         <!-- FOOTER -->
         <div class="d-flex justify-content-between align-items-center">
           <small class="text-muted">All fields marked with * are required</small>
-          <button class="btn btn-primary" type="submit">ubmit Report
-            <i class="bi bi-send"></i> S
-          </button>
+          <button class="btn btn-primary" type="submit">Submit Report
+            <i class="bi bi-send"></i> 
         </div>
 
       </form>
@@ -216,26 +216,18 @@ $(document).ready(function() {
 <script>
 
 
-function initializeMap(lng, lat) {
+ 
   const map = new maplibregl.Map({
     container: 'map',
     // Using a public OSM-based vector style
     style: 'https://tiles.openfreemap.org/styles/bright', 
-    center: [lng, lng], // Kathmandu
+    center: [85.3240, 27.7172], // Kathmandu
     zoom: 15.5,
     pitch: 45,    // Tilts the map for 3D view
-    bearing: 0, // Rotates the map slightly
+    bearing: -17, // Rotates the map slightly
     antialias: true
   });
-    map.addControl(
-    new maplibregl.GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: true
-      },
-      trackUserLocation: true,
-      showUserLocation: true
-    })
-  );
+   
 
   // Add a marker that we can move
   let marker = new maplibregl.Marker({ draggable: true })
@@ -245,14 +237,8 @@ function initializeMap(lng, lat) {
   // Update hidden inputs when marker is dragged
   function onDragEnd() {
     const lngLat = marker.getLngLat();
-    const lat = lngLat.lat.toFixed(6);
-    const lng = lngLat.lng.toFixed(6);
-    document.getElementById('lat').value = lat;
-    document.getElementById('lng').value = lng;
-    document.getElementById('city_name').value = "fetching"
-
-    
-    getCityName(lng, lat);
+    document.getElementById('lat').value = lngLat.lat.toFixed(6);
+    document.getElementById('lng').value = lngLat.lng.toFixed(6);
     
   }
   marker.on('dragend', onDragEnd);
@@ -260,14 +246,11 @@ function initializeMap(lng, lat) {
   // Also update position on map click
   map.on('click', (e) => {
     marker.setLngLat(e.lngLat);
-    lat= e.lngLat.lat.toFixed(6);
-    lng = e.lngLat.lng.toFixed(6);
-    document.getElementById('lat').value = lat;
-    document.getElementById('lng').value = lng;
-    document.getElementById('city_name').value = "fetching"
+     document.getElementById('lat').value = e.lngLat.lat.toFixed(6);
+    document.getElementById('lng').value = e.lngLat.lng.toFixed(6);
+    document.getElementById('city_name').removeAttribute("readonly"); // Placeholder, ideally use reverse geocoding here
 
-
-    getCityName(lng, lat);
+    
   });
 
   // Add 3D Building Layer after map loads
@@ -286,22 +269,7 @@ function initializeMap(lng, lat) {
       }
     });
   });
-}
-navigator.geolocation.getCurrentPosition(
-    (position) => {
-        userLng = position.coords.longitude;
-        userLat = position.coords.latitude;
-        initializeMap(userLng, userLat);
-    },
-    (err) => {
-        console.warn("Location error, defaulting to Kathmandu");
-        userLng = 85.3240;
-        userLat = 27.7172;
-        initializeMap(userLng, userLat);
-    },
-    { timeout: 5000 } // Give up after 5 seconds
-);
-
+ 
 
 const uploadInput = document.getElementById("upload");
 const previewGrid = document.getElementById("previewGrid");
@@ -326,7 +294,7 @@ uploadInput.addEventListener("change", async function () {
     if (!file.type.startsWith("image/")) continue;
 
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      alert(`${file.name} exceeds 2MB and was skipped.`);
+     alert(`${file.name} exceeds 10MB and was skipped.`);
       continue;
     }
 
@@ -423,21 +391,7 @@ function resizeImage(file) {
 } 
 
 
-async function getCityName(lng, lat) {
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
-        const data = await response.json();
-        
-        // Nominatim returns city, town, or village depending on the area
-        const city = data.address.city || data.address.town || data.address.village || "Unknown Location";
-        
-        // Update your UI or hidden input
-        document.getElementById('city_name').value = city;
-    } catch (error) {
-        console.error("Error fetching city:", error);
-    }
-}
-
+ 
 
   
 </script>
