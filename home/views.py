@@ -12,7 +12,6 @@ def index(request):
         .order_by('-id')[:10]
     )
 
-
     context = {
         "items": items
     }

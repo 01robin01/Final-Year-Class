@@ -138,11 +138,19 @@ def update_item(request, item_id):
         item.latitude = request.POST.get("latitude", item.latitude)
         item.longitude = request.POST.get("longitude", item.longitude)
         item.event_at = request.POST.get("event_at", item.event_at)
-        item.is_sensitive = bool(request.POST.get("is_sensitive", item.is_sensitive))
+        item.is_sensitive = request.POST.get("is_sensitive") == "on"
         item.save()
         
         # Handle new image uploads
         images = request.FILES.getlist('images')
+        
+        for image in item.images.all():
+            if item.is_sensitive:
+                    image.is_private = True
+                    image.save()
+            else:
+                    image.is_private = False
+                    image.save()
         
         existing_images_count = item.images.count()
         if existing_images_count + len(images) > 10:
@@ -176,18 +184,24 @@ def update_item(request, item_id):
                 ItemImage.objects.create(
                     item=item,
                     image=django_image,
-                    perceptual_hash=str(phash)
+                    perceptual_hash=str(phash),
+                    is_private=item.is_sensitive
                 )
             except Exception:
                 messages.error(request, f"{image.name} is not a valid image.")
         
         messages.success(request, "Item updated successfully!")
-        return redirect("my_lost_items")
+        next_url = request.GET.get('next','my_lost_items')
+        return redirect(next_url)
 
     context = {
         "item": item,
         "categories": categories
     }
+    next = request.META.get('HTTP_REFERER', None)
+    if next:
+        if 'http' not in next:
+            context['next'] = next
 
     return render(request, "report-lost.html", context)
 

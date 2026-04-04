@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'accounts',
-    'home',
+    'home.apps.HomeConfig',
     'lost',
     'found',
     'allauth',
@@ -164,5 +164,18 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 MAX_IMAGE_SIZE_MB = 2
 MAX_RESOLUTION = (1600, 1600)
 
+IMAGE_HASH_THRESHOLD = 10
+
 
 LOGIN_URL='/account/login/'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development, prints emails to console
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+ 

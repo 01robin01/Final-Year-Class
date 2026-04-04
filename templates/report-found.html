@@ -42,7 +42,11 @@ Report Found Item
 
     <!-- FORM CARD -->
     <div class="form-card">
-      <form method="post" enctype="multipart/form-data">
+     <form method="post" enctype="multipart/form-data"
+      {% if next %}
+      action="./?next={{ next|urlencode }}"
+      {% endif %}
+      >
         {% csrf_token %}
 
         <!-- OBJECT TITLE -->
