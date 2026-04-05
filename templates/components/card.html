@@ -1,23 +1,24 @@
-<div class="col-md-3 d-flex">
- <div class="col-lg-3  col-sm-8 col-md-4 item" data-status="{{ item.item_type }}">
+<div class="col-lg-3  col-sm-8 col-md-4 item" data-status="{{ item.item_type }}">
         <div class="card w-100 h-100 d-flex flex-column ">
+
           <div class="ratio ratio-4x3">
-             {% if item.images.first.is_private %}
+
+            {% if item.images.first.is_private %}
             <img src="data:image/jpeg;base64,{{ item.images.first.base64_image }}" alt="{{ item.title }}" class="w-100 h-100 object-fit-contain rounded-top" >
             {% else %}
             <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}" class="w-100 h-100 object-fit-contain rounded-top" >
             {% endif %}
+
           </div>
 
           <div class="card-body text-center d-flex flex-column">
-            
-             <span class="badge {% if item.item_type == 'found' %}bg-success{% else %}bg-danger{% endif %} mb-2">{{ item.item_type|title }}</span>
+            <span class="badge {% if item.item_type == 'found' %}bg-success{% else %}bg-danger{% endif %} mb-2">{{ item.item_type|title }}</span>
             <h6>{{ item.title }}</h6>
             <p class="text-muted small">{{ item.location_text }}</p>
 
             <div class="d-flex gap-2 mt-auto">
               <a class="btn btn-outline-primary btn-sm w-50" href="{% url 'view_item' item.id %}">View</a>
-                {% if item.reported_by == user %}
+              {% if item.reported_by == user %}
               {% if item.item_type == 'lost' %}
               <a class="btn btn-outline-danger btn-sm w-50" href="{% url 'update_item' item.id %}">Edit</a>
               {% else %}
