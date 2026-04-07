@@ -1,10 +1,6 @@
-from multiprocessing import context
-
 from django.conf import settings
+
 from django.shortcuts import redirect, render
-
-
-# Create your views here.
 
 from home.models import Item, Category,ItemImage
 from PIL import Image
@@ -18,24 +14,24 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseForbidden
 
-
 @login_required
 def report_lost(request):
-
     if request.method == 'POST':
+
         title = request.POST.get('title')
         description = request.POST.get('description')
         category = Category.objects.get(id=request.POST.get('category'))
         location_text = request.POST.get('location_text')
-        long = request.POST.get('longitude')
-        lat = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        latitude = request.POST.get('latitude')
         is_sensitive = request.POST.get('is_sensitive') == 'on'
         event_at = request.POST.get('event_at')
+
         images = request.FILES.getlist('images')
-        
         if len(images) > 10:
             messages.error(request, "You can only upload up to 10 images.")
             return redirect('report_lost')
+
         item = Item.objects.create(
             item_type='lost',
             title=title,
@@ -44,26 +40,24 @@ def report_lost(request):
             reported_by=request.user,
             location_text=location_text,
             event_at=event_at,
-            longitude=long,
-            latitude=lat,
+            longitude=longitude,
+            latitude=latitude,
             is_sensitive=is_sensitive
-            
         )
-
         for image in images:
-            
             if image.size > settings.MAX_IMAGE_SIZE_MB * 1024 * 1024:
                 messages.error(
                     request,
                     f"{image.name} exceeds 2MB limit."
-                     )
+                )
                 continue
 
             try:
                 img = Image.open(image)
-                img = img.convert("RGB")  
-                
+                img = img.convert("RGB")
+
                 img.thumbnail(settings.MAX_RESOLUTION, Image.LANCZOS) # pyright: ignore[reportAttributeAccessIssue]
+
                 
                 img_io = BytesIO()
                 img.save(img_io, format='JPEG', quality=90)
@@ -78,20 +72,20 @@ def report_lost(request):
                     None
                 )
 
-
+                
                 phash = imagehash.phash(
                     Image.open(django_image),
                     hash_size=16
                 )
 
-
+                
                 ItemImage.objects.create(
                     item=item,
+                    image=django_image,
                     is_private=is_sensitive,
                     perceptual_hash=str(phash)
                 )
-                
-                
+
             except Exception:
                 messages.error(
                     request,
@@ -104,7 +98,9 @@ def report_lost(request):
         )
         return redirect('my_lost_items')
 
-        return render(request, 'report-lost.html')
+    return render(request, 'report-lost.html')
+
+
 @login_required
 def my_lost_items(request):
     items = Item.objects.filter(
@@ -115,12 +111,12 @@ def my_lost_items(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
-        
         'page_obj': page_obj,
         'my_lost_items_count': items.count(),
         'my_found_items_count': Item.objects.filter(reported_by=request.user, item_type='found').count()
     }
     return render(request, 'my-lost-items.html', context)
+
 
 @login_required
 def update_item(request, item_id):
@@ -143,7 +139,6 @@ def update_item(request, item_id):
         
         # Handle new image uploads
         images = request.FILES.getlist('images')
-        
         for image in item.images.all():
             if item.is_sensitive:
                     image.is_private = True
@@ -189,7 +184,7 @@ def update_item(request, item_id):
                 )
             except Exception:
                 messages.error(request, f"{image.name} is not a valid image.")
-        
+
         messages.success(request, "Item updated successfully!")
         next_url = request.GET.get('next','my_lost_items')
         return redirect(next_url)
@@ -202,7 +197,6 @@ def update_item(request, item_id):
     if next:
         if 'http' not in next:
             context['next'] = next
-
     return render(request, "report-lost.html", context)
 
 
@@ -221,6 +215,7 @@ def delete_item(request, item_id):
     }
     return render(request, "confirm-delete.html", context)
 
+
 @login_required
 def delete_item_image(request, image_id):
     if request.method == 'POST':
@@ -234,7 +229,6 @@ def delete_item_image(request, image_id):
         return redirect("update_item", item_id=item_id)
     return redirect("my_lost_items")
 
-
 @login_required
 def lost_item_detail(request, item_id):
     item = get_object_or_404(Item, id=item_id)
@@ -244,12 +238,33 @@ def lost_item_detail(request, item_id):
         "related_items": related_items
     }
     return render(request, "item-details.html", context)
+
+
+
+
+
 @login_required
 def claim_item(request, item_id):
     item = get_object_or_404(Item, id=item_id)
     if request.method == 'POST':
+        full_name = request.POST.get('full_name')
+        email = request.POST.get('email')
+        contact = request.POST.get('contact')
+        proof = request.POST.get('proof')
+
+        if not all([full_name, email, contact, proof]):
+            messages.error(request, "Please fill in all required fields.")
+            return redirect("claim_item", item_id=item.id)
+            
+        image = request.FILES.get('image')
+        if image and image.size > getattr(settings, 'MAX_IMAGE_SIZE_MB', 2) * 1024 * 1024:
+            messages.error(request, "Image size exceeds limit.")
+            return redirect("claim_item", item_id=item.id)
+
         # Here you would typically create a Claim object or send a notification to the item's reporter
         messages.success(request, "Claim request sent to the item's reporter!")
+        if item.item_type == 'found':
+            return redirect("view_found_item", item_id=item.id)
         return redirect("view_item", item_id=item.id)
 
     context = {

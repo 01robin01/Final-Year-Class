@@ -27,15 +27,14 @@
                 <div class="row g-4">
                     <!-- LEFT: IMAGES -->
                     <div class="col-lg-5">
-                            {% if item.images.all %}
+                        {% if item.images.all %}
                             <!-- Main Display Image -->
-                            <div class="main-image-container mb-3 text-center">
-                                 {% if item.images.first.is_private %}
-                                <img id="mainImage" src="data:image/jpeg;base64,{{ item.images.first.base64_image }}" class="img-fluid rounded border shadow-sm" alt="{{ item.title }}" style="max-height: 400px; width: 100%; object-fit: contain;">
+                            <div class="main-image-container mb-3 text-center" style="overflow: hidden; position: relative; cursor: crosshair;" onmousemove="zoomImage(event, this)" onmouseenter="zoomIn(this)" onmouseleave="zoomOut(this)">
+                                {% if item.images.first.is_private %}
+                                <img id="mainImage" src="data:image/jpeg;base64,{{ item.images.first.base64_image }}" class="img-fluid rounded border shadow-sm" alt="{{ item.title }}" style="max-height: 400px; width: 100%; object-fit: contain; transition: transform 0.1s ease; pointer-events: none;">
                                 {% else %}
-                                
-                                <img id="mainImage" src="{{ item.images.first.image.url }}" class="img-fluid rounded border shadow-sm" alt="{{ item.title }}" style="max-height: 400px; width: 100%; object-fit: contain;">
-                                  {% endif %}
+                                <img id="mainImage" src="{{ item.images.first.image.url }}" class="img-fluid rounded border shadow-sm" alt="{{ item.title }}" style="max-height: 400px; width: 100%; object-fit: contain; transition: transform 0.1s ease; pointer-events: none;">
+                                {% endif %}
                             </div>
                             
                             <!-- Thumbnail Gallery -->
@@ -46,9 +45,8 @@
                                 this is private
                                 <img src="data:image/jpeg;base64,{{ img.base64_image }}" class="img-thumbnail cursor-pointer thumbnail-img {% if forloop.first %}border-primary border-2{% endif %}" alt="Thumbnail" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" onclick="changeMainImage(this, 'data:image/jpeg;base64,{{ img.base64_image }}')">
                                 {% else %}
-                                
                                 <img src="{{ img.image.url }}" class="img-thumbnail cursor-pointer thumbnail-img {% if forloop.first %}border-primary border-2{% endif %}" alt="Thumbnail" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" onclick="changeMainImage(this, '{{ img.image.url }}')">
-                                 {% endif %}
+                                {% endif %}
                                 {% endfor %}
                             </div>
                             {% endif %}
@@ -58,22 +56,22 @@
                                 <span class="text-muted"><i class="bi bi-image" style="font-size: 3rem;"></i><br>No Image Available</span>
                             </div>
                         {% endif %}
-
-
                     </div>
 
                     <!-- RIGHT: DETAILS -->
                     <div class="col-lg-7">
-                          <h5 class="fw-semibold mb-2">{{ item.title }}</h5>
-                            <span class="badge {% if item.item_type == 'lost' %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %} mb-3 text-uppercase">
+                        <h5 class="fw-semibold mb-2">{{ item.title }}</h5>
+
+                        <span class="badge {% if item.item_type == 'lost' %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %} mb-3 text-uppercase">
                             {{ item.item_type }}
                         </span>
-                             <ul class="item-meta list-unstyled">
+
+                        <ul class="item-meta list-unstyled">
                             <li class="mb-2">
                                 <i class="bi bi-tag text-muted me-2"></i>
                                 <strong>Category:</strong> {{ item.category.name }}
                             </li>
-                          <li class="mb-2">
+                            <li class="mb-2">
                                 <i class="bi bi-geo-alt text-muted me-2"></i>
                                 <strong>Location:</strong>
                                 {{ item.location_text }}
@@ -81,12 +79,12 @@
                             <li class="mb-2">
                                 <i class="bi bi-calendar text-muted me-2"></i>
                                 <strong>Date:</strong>
-                               {{ item.event_at|naturalday }} at {{ item.event_at|time:"H:i" }}
+                                {{ item.event_at|naturalday }} at {{ item.event_at|time:"H:i" }}
                             </li>
-                          <li class="mb-2">
+                            <li class="mb-2">
                                 <i class="bi bi-person text-muted me-2"></i>
                                 <strong>Posted By:</strong>
-                               {{ item.reported_by.get_full_name|default:item.reported_by.username }}
+                                {{ item.reported_by.get_full_name|default:item.reported_by.username }}
                             </li>
                         </ul>
                     </div>
@@ -97,12 +95,12 @@
 
         <!-- DESCRIPTION -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header fw-semibold">
+            <div class="card-header fw-semibold"> 
                 Item Description
             </div>
             <div class="card-body">
                 <p class="mb-0">
-                   {{ item.description|linebreaksbr }}
+                    {{ item.description|linebreaksbr }}
                 </p>
             </div>
         </div>
@@ -113,14 +111,12 @@
                 Claim Area
             </div>
             <div class="card-body">
-                 
 
                 <div class="d-flex gap-3">
-
-                     {% if request.user == item.reported_by %}
-                     <p class="text-muted">You cannot Claim your own lost or found items. <a href="{% url 'my_lost_items' %}">Click here</a> to view your reported items.</p>
+                    {% if request.user == item.reported_by %}
+                        <p class="text-muted">You cannot Claim your own lost or found items. <a href="{% url 'my_lost_items' %}">Click here</a> to view your reported items.</p>
                     {% else %}
-                      <button class="btn btn-primary" onclick="window.location.href='{% url 'claim_item' item.id %}'">
+                        <button class="btn btn-primary" onclick="window.location.href='{% url 'claim_item' item.id %}'">
                             <i class="bi bi-shield-check"></i>
                             Claim This Item
                         </button>
@@ -140,21 +136,19 @@
             <h6 class="fw-semibold mb-3">Related Items</h6>
 
             <div class="row g-4">
-
-               {% for related_item in related_items %}
+                {% for related_item in related_items %}
                     {% if related_item.item_type == 'lost' %}
                         {% url 'view_item' related_item.id as item_url %}
                     {% else %}
                         {% url 'view_found_item' related_item.id as item_url %}
                     {% endif %}
-                  {% include 'components/card.html' with item=related_item %}
+                    {% include 'components/card.html' with item=related_item %}
                 {% endfor %}
             </div>
         </div>
-         {% endif %}
+        {% endif %}
 </div>
 </main>
-
 {% endblock content %}
 
 {% block extra_js %}
@@ -170,6 +164,33 @@
         
         // Add active border to clicked thumbnail
         thumbnailEl.classList.add('border-primary', 'border-2');
+    }
+
+    function zoomIn(element) {
+        const img = element.querySelector('img');
+        if (img) img.style.transform = 'scale(2)';
+    }
+
+    function zoomOut(element) {
+        const img = element.querySelector('img');
+        if (img) {
+            img.style.transform = 'scale(1)';
+            img.style.transformOrigin = 'center center';
+        }
+    }
+
+    function zoomImage(event, element) {
+        const img = element.querySelector('img');
+        if (!img) return;
+        
+        // Get the bounding rectangle of target
+        const rect = element.getBoundingClientRect();
+        
+        // Calculate mouse position in percentage
+        const x = ((event.clientX - rect.left) / rect.width) * 100;
+        const y = ((event.clientY - rect.top) / rect.height) * 100;
+        
+        img.style.transformOrigin = `${x}% ${y}%`;
     }
 </script>
 {% endblock extra_js %}

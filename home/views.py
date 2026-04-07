@@ -22,8 +22,11 @@ def search(request):
     if request.method == 'POST':
         query = request.POST.get("q", "")
         img = request.FILES.get("img", None)
+        
+        results = Item.objects.none()
+
         if query:
-            results = Item.objects.filter(title__icontains=query)
+            results = Item.objects.filter(title__icontains=query, is_deleted=False)
             print("Text Results:", results)
 
         if img is not None:
@@ -31,19 +34,19 @@ def search(request):
             image = Image.open(img)
             phash = imagehash.phash(image)
             similar_images = ItemImage.objects.filter(perceptual_hash__startswith=str(phash)[:4]).select_related('item')
-            image_item_ids = [img.item.id for img in similar_images] # type: ignore
+            image_item_ids = [img_obj.item.id for img_obj in similar_images]
             image_results = Item.objects.filter(id__in=image_item_ids, is_deleted=False)
-            results = results | image_results # type: ignore
+            results = results | image_results
             print("Image Results:", image_results)
-
-        
 
         context = {
             "query": query,
-            "matches": results
+            "matches": results.distinct(),
+            "categories": Category.objects.all(),
+            "img_searched": img is not None
         }
 
-        return render(request, "search-page.html", context,status=201)
+        return render(request, "search-page.html", context, status=201)
 
 
 

@@ -9,8 +9,8 @@
 {% block content %}
   
     <!-- MAIN CONTENT -->
-    <main class="col-md-10 p-4">
-
+    
+s
       <!-- HEADER -->
       <div class="welcome-box mb-4">
         <h3>Hello, Rabin 👋</h3>
@@ -29,8 +29,8 @@
         {% for item in lost_items %}
           {% include 'components/card.html' with item=item %}
         {% endfor %}
-{% comment %} 
-        <!-- CARD 2 -->
+
+        {% comment %} <!-- CARD 2 -->
         <div class="col-md-4 item" data-status="lost">
           <div class="card item-card">
             <img src="/media/images/blue backpack.jpg" class="card-img-top">
@@ -60,7 +60,8 @@
               <button class="btn btn-primary w-100">View Details</button>
             </div>
           </div>
-        </div> {% endcomment %}
+        </div>
+        {% endcomment %}
 
         <!-- FOUND ITEM EXAMPLE -->
         {% for item in found_items %}
@@ -68,7 +69,6 @@
         {% endfor %}
 
       </div>
-    </main>
 
 {% endblock content %}
 
@@ -108,6 +108,5 @@
   window.onload = () => lostBtn.click();
 </script>
 {% endblock extra_js %}
-
 
 
