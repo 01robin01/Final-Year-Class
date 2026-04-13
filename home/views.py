@@ -241,3 +241,72 @@ def admin_claims(req):
         'claims': Item.objects.filter(claimed_by__isnull=False, is_deleted=False)
     }
     return render(req,'admin-claims.html',context)
+
+from .models import Donation
+import uuid
+def donate(req):
+    if req.method == 'POST':
+        amount = req.POST.get('amount')
+        donor = req.POST.get('name')
+        donation = Donation.objects.create(
+            donor=donor,
+            amount=amount,
+            total_amount=amount,  # Assuming no extra charges for simplicity
+            transaction_uuid=str(uuid.uuid4()),
+            code="EPAYTEST",
+            payment_method="esewa",
+            )
+        return redirect('donation_confirm', transaction_uuid=donation.transaction_uuid)
+    return render(req,'donate.html')
+
+from django_esewa import EsewaPayment
+
+def donation_confirm(req, transaction_uuid):
+    order = Donation.objects.filter(transaction_uuid=transaction_uuid).first()
+    payment = EsewaPayment(
+        product_code=order.code,
+        success_url=f"http://localhost:8000/donate/success/{order.transaction_uuid}/",
+        failure_url=f"http://localhost:8000/donate/failure/{order.transaction_uuid}/",
+        amount=order.amount,
+        tax_amount=order.tax_amount,
+        total_amount=order.total_amount,
+        product_delivery_charge=order.delivery_charge,
+        product_service_charge=order.service_charge,
+        transaction_uuid=order.transaction_uuid,
+        )
+    signature = payment.create_signature() #Saves the signature as well as return it
+    
+    context = {
+            'form':payment.generate_form(),
+            'amount': order.total_amount,
+        }
+    return render(req, 'confirm_donation.html',context)
+
+def donation_success(req, transaction_uuid):
+    req.GET.get('data')
+    order = Donation.objects.filter(transaction_uuid=transaction_uuid).first()
+    payment = EsewaPayment(
+        product_code=order.code,
+        success_url=f"http://localhost:8000/donate/success/{order.transaction_uuid}/",
+        failure_url=f"http://localhost:8000/donate/failure/{order.transaction_uuid}/",
+        amount=order.amount,
+        tax_amount=order.tax_amount,
+        total_amount=order.total_amount,
+        product_delivery_charge=order.delivery_charge,
+        product_service_charge=order.service_charge,
+        transaction_uuid=order.transaction_uuid,
+        )
+
+    if payment.is_completed(dev=True):
+        order.payment_status = 'completed'
+        order.save()
+    else: 
+        return redirect('donation_failure', transaction_uuid=transaction_uuid)
+    return render(req, 'donation_success.html', {'transaction_uuid': transaction_uuid})
+
+def donation_failure(req, transaction_uuid):
+    donation = Donation.objects.filter(transaction_uuid=transaction_uuid).first()
+    if donation:
+        donation.payment_status = 'failed'
+        donation.save()
+    return render(req, 'donation_failure.html', {'transaction_uuid': transaction_uuid})

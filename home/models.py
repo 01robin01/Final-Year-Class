@@ -209,3 +209,29 @@ class Notification(models.Model):
             models.Index(fields=["user", "is_read"]),
             models.Index(fields=["entity_type", "entity_id"]),
         ]
+
+
+
+PAYMENT_CHOICES = (
+    ("khalti", "Khalti"),
+    ("esewa", "eSewa"),
+    ("bank_transfer", "Bank Transfer"),
+)
+
+payment_status_choices = (
+    ("pending", "Pending"),
+    ("completed", "Completed"),
+    ("failed", "Failed"),
+)
+class Donation(models.Model):
+    donor = models.CharField(max_length=40)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_uuid = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=20)
+    service_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES)
+    payment_status = models.CharField(max_length=20, choices=payment_status_choices, default="pending")

@@ -19,6 +19,7 @@ class CustomUser(AbstractUser):
     city = models.CharField(max_length=100, blank=True, null=True)
     zip_code = models.CharField(max_length=20, blank=True, null=True,help_text="Enter ZIP or postal code")
     secondary_contact = models.CharField(max_length=15, blank=True, null=True,help_text="Enter secondary contact number with country code")
+    activation_token = models.CharField(max_length=100, blank=True, null=True)
 
 
     USERNAME_FIELD = 'email'

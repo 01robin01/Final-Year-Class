@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Item,ItemImage,Match,Claim,Notification 
+from .models import Category, Item,ItemImage,Match,Claim,Notification,Donation
 
 
 
@@ -10,3 +10,4 @@ admin.site.register(Match)
 admin.site.register(Claim)
 admin.site.register(Notification)
 # Register your models here.
+admin.site.register(Donation)
