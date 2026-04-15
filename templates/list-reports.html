@@ -1,0 +1,95 @@
+{% extends 'base-admin.html' %}
+{% load static %}
+
+{% block title %}Admin - Reports List{% endblock title %}
+
+{% block content %}
+<div class="container-fluid d-flex">
+    <!-- Main Content -->
+    <main class="content flex-grow-1">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Item Reports</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Item Name</th>
+                            <th>Reported By</th>
+                            <th>Posted By</th>
+                            <th>Report Date</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td>#R{{ report.id }}</td>
+                            <td>{{ report.item.title }}</td>
+                            <td>
+                                {{ report.reported_by.first_name }} {{ report.reported_by.last_name }}
+                                {% if not report.reported_by.first_name and not report.reported_by.last_name %}{{ report.reported_by.username }}{% endif %}
+                            </td>
+                            <td>
+                                {{ report.item.reported_by.first_name }} {{ report.item.reported_by.last_name }}
+                                {% if not report.item.reported_by.first_name and not report.item.reported_by.last_name %}{{ report.item.reported_by.username }}{% endif %}
+                            </td>
+                            <td>{{ report.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if report.status == 'Pending' %}
+                                    <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                {% elif report.status == 'Resolved' %}
+                                    <span class="badge bg-success-subtle text-success">Resolved</span>
+                                {% elif report.status == 'Dismissed' %}
+                                    <span class="badge bg-secondary-subtle text-secondary">Dismissed</span>
+                                {% else %}
+                                    <span class="badge bg-info-subtle text-info">{{ report.status|default:'Pending' }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'report_detail' %}?id={{ report.id }}" class="btn btn-sm btn-outline-primary">View</a>
+                                <!-- Delete form/button -->
+                                <form action="{% url 'delete_report' report.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this report?');">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No reports found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination (if desired following admin users) -->
+            {% if page_obj %}
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <small>Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results</small>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock content %}

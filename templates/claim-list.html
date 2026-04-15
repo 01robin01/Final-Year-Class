@@ -1,0 +1,88 @@
+{% extends 'base-admin.html' %}
+{% load static %}
+
+{% block title %}Admin Claims List{% endblock title %}
+
+{% block content %}
+<div class="container-fluid d-flex">
+    <main class="content flex-grow-1">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Claims</h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Claim ID</th>
+                            <th>User Name</th>
+                            <th>Item Name</th>
+                            <th>Claim Date</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for claim in claims %}
+                        <tr>
+                            <td>#C{{ claim.id }}</td>
+                            <td>
+                                {{ claim.user.first_name }} {{ claim.user.last_name }}
+                                {% if not claim.user.first_name and not claim.user.last_name %}{{ claim.user.username }}{% endif %}
+                            </td>
+                            <td>{{ claim.item.title }}</td>
+                            <td>{{ claim.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                {% if claim.status == 'Pending' %}
+                                    <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                {% elif claim.status == 'Approved' %}
+                                    <span class="badge bg-success-subtle text-success">Approved</span>
+                                {% elif claim.status == 'Rejected' %}
+                                    <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary">{{ claim.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="admin-claim.html?id={{ claim.id }}" class="btn btn-sm btn-outline-primary">View</a>
+                                <form action="{% url 'delete_claim' claim.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this claim?');">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No claims found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination (if applicable, following Users table style) -->
+            {% if page_obj %}
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <small>Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results</small>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">Next</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock content %}
