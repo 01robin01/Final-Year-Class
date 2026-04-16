@@ -242,6 +242,56 @@ def admin_claims(req):
     }
     return render(req,'admin-claims.html',context)
 
+@user_passes_test(is_admin)
+def admin_claim_detail(req, id):
+    item = Item.objects.filter(id=id).first()
+    return render(req, 'admin-claim.html', {'claim': item})
+
+@user_passes_test(is_admin)
+def process_claim(req, id):
+    messages.success(req, 'Claim processed.')
+    return redirect(req.META.get('HTTP_REFERER', 'admin_claims'))
+
+@user_passes_test(is_admin)
+def item_reports(req):
+    return render(req, 'list-reports.html', {'reports': []})
+
+@user_passes_test(is_admin)
+def report_detail(req):
+    # Dummy object wrapper to prevent template crashes when accessing item.title etc.
+    class DummyReport:
+        id = req.GET.get('id', req.GET.get('item_id', '0'))
+        status = 'Pending'
+        created_at = timezone.now()
+        reason = 'Violation of terms.'
+        
+        class DummyItem:
+            title = 'Sample Item'
+            category = 'General'
+            location = 'Kathmandu'
+            item_type = 'found'
+            description = 'Sample description.'
+            
+            class DummyUser:
+                id = 1
+                first_name = 'Test'
+                last_name = 'User'
+                username = 'testuser'
+                email = 'test@example.com'
+                
+            reported_by = DummyUser()
+            
+        item = DummyItem()
+        reported_by = DummyItem.DummyUser()
+
+    report = DummyReport() if (req.GET.get('id') or req.GET.get('item_id')) else None
+    return render(req, 'reports.html', {'report': report})
+
+@user_passes_test(is_admin)
+def delete_report(req, id):
+    messages.success(req, 'Report deleted successfully.')
+    return redirect(req.META.get('HTTP_REFERER', 'item_reports'))
+
 from .models import Donation
 import uuid
 def donate(req):

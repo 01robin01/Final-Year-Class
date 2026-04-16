@@ -12,13 +12,19 @@ urlpatterns = [
     path('admin-lost/',admin_lost, name='admin_lost'),
     path('admin-found/',admin_found, name='admin_found'),
     path('admin-users/',admin_users, name='admin_users'),
-    path('admin-claims/',admin_claims, name='admin_claims'),
-    
     path('admin-delete-item/<int:id>/', delete_item, name='delete_item'),
     path('admin-delete-user/<int:id>/', delete_user, name='delete_user'),
     path('admin-suspend-user/<int:id>/', suspend_user, name='suspend_user'),
     path('admin-user-detail/<int:id>/', user_detail, name='user_detail'),
 
+    # Claims & Reports dummy routes
+    path('admin-claims/',admin_claims, name='admin_claims'),
+    path('admin-claim/<int:id>/', admin_claim_detail, name='admin_claim'),
+    path('process-claim/<int:id>/', process_claim, name='process_claim'),
+    path('item-reports/', item_reports, name='item_reports'),
+    path('reports/', report_detail, name='report_detail'),
+    path('delete-report/<int:id>/', delete_report, name='delete_report'),
+    
     #Donations 
     path('donate/',donate,name="donate"),
     path('donate/confirm/<str:transaction_uuid>/',donation_confirm,name="donation_confirm"),
