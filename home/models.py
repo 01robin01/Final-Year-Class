@@ -160,8 +160,9 @@ class Claim(models.Model):
         ("approved", "Approved"),
         ("rejected", "Rejected"),
     )
+    
 
-    match = models.ForeignKey(Match, related_name="claims", on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, related_name="claims", on_delete=models.CASCADE)
     claimant = models.ForeignKey(User, on_delete=models.CASCADE)
 
     proof_text = models.TextField()
@@ -235,3 +236,22 @@ class Donation(models.Model):
 
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES)
     payment_status = models.CharField(max_length=20, choices=payment_status_choices, default="pending")
+
+class Report(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("resolved", "Resolved"),
+        ("dismissed", "Dismissed"),
+    )
+
+    item = models.ForeignKey(Item, related_name="reports", on_delete=models.CASCADE)
+    reported_by = models.ForeignKey(User, related_name="reports", on_delete=models.CASCADE)
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("item", "reported_by")  # one report per user per item
+
+    def __str__(self):
+        return f"Report #{self.id} - {self.item.title}"

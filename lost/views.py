@@ -244,31 +244,89 @@ def lost_item_detail(request, item_id):
 
 
 
+from django.db.models import Q
+from home.models import Match 
+from home.models import Claim
+
+# @login_required
+# def claim_item(request, item_id):
+#     item = get_object_or_404(Item, id=item_id)
+#     if request.method == 'POST':
+#         full_name = request.POST.get('full_name')
+#         email = request.POST.get('email')
+#         contact = request.POST.get('contact')
+#         proof = request.POST.get('proof')
+
+#         if not all([ ]):
+#             messages.error(request, "Please fill in all required fields.")
+#             return redirect("claim_item", item_id=item.id)
+            
+#         image = request.FILES.get('image')
+
+#         # Create claim properly
+#         Claim.objects.create(
+#             item=item,
+#             claimant=request.user,
+#             proof_text=proof,
+#             proof_files=image
+#         )
+
+#         messages.success(request, "Claim submitted for review!")
+#         return redirect("view_item", item_id=item.id)
+
+#     return render(request, "claim.html", {"item": item})
+
+
 @login_required
 def claim_item(request, item_id):
     item = get_object_or_404(Item, id=item_id)
-    if request.method == 'POST':
-        full_name = request.POST.get('full_name')
-        email = request.POST.get('email')
-        contact = request.POST.get('contact')
-        proof = request.POST.get('proof')
 
-        if not all([full_name, email, contact, proof]):
-            messages.error(request, "Please fill in all required fields.")
-            return redirect("claim_item", item_id=item.id)
-            
-        image = request.FILES.get('image')
-        if image and image.size > getattr(settings, 'MAX_IMAGE_SIZE_MB', 2) * 1024 * 1024:
-            messages.error(request, "Image size exceeds limit.")
-            return redirect("claim_item", item_id=item.id)
-
-        # Here you would typically create a Claim object or send a notification to the item's reporter
-        messages.success(request, "Claim request sent to the item's reporter!")
-        if item.item_type == 'found':
-            return redirect("view_found_item", item_id=item.id)
+    # Prevent duplicate claims
+    if Claim.objects.filter(item=item, claimant=request.user).exists():
+        messages.warning(request, "You have already submitted a claim for this item.")
         return redirect("view_item", item_id=item.id)
 
-    context = {
-        "item": item
-    }
-    return render(request, "claim.html", context)
+    if request.method == "POST":
+        proof = request.POST.get("proof", "").strip()
+        image = request.FILES.get("image")
+
+        if not proof:
+            messages.error(request, "Please provide proof text.")
+            return redirect("claim_item", item_id=item.id)
+
+        Claim.objects.create(
+            item=item,
+            claimant=request.user,
+            proof_text=proof,
+            proof_files=image,  # optional
+        )
+
+        messages.success(request, "Claim submitted for review!")
+        return redirect("view_item", item_id=item.id)
+
+    return render(request, "claim.html", {"item": item})
+
+
+# @login_required
+# def admin_claims(request):
+#     claims = Claim.objects.all().order_by('-created_at')
+#     paginator = Paginator(claims, 10)
+#     page_number = request.GET.get('page')
+#     page_obj = paginator.get_page(page_number)
+#     return render(request, "admin_claims.html", {"claims": claims, "page_obj": page_obj})
+
+
+# @login_required
+# def admin_claim_detail(request, claim_id):
+#     claim = get_object_or_404(Claim, id=claim_id)
+#     return render(request, "admin_claim_detail.html", {"claim": claim})
+
+
+# @login_required
+# def delete_claim(request, claim_id):
+#     claim = get_object_or_404(Claim, id=claim_id)
+#     if request.method == 'POST':
+#         claim.delete()
+#         messages.success(request, "Claim deleted successfully!")
+#         return redirect("admin_claims")
+#     return redirect("admin_claims")

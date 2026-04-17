@@ -21,9 +21,11 @@ urlpatterns = [
     path('admin-claims/',admin_claims, name='admin_claims'),
     path('admin-claim/<int:id>/', admin_claim_detail, name='admin_claim'),
     path('process-claim/<int:id>/', process_claim, name='process_claim'),
+
     path('item-reports/', item_reports, name='item_reports'),
     path('reports/', report_detail, name='report_detail'),
     path('delete-report/<int:id>/', delete_report, name='delete_report'),
+    path('admin-report/<int:id>/', admin_report_detail, name='admin_report_detail'),
     
     #Donations 
     path('donate/',donate,name="donate"),

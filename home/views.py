@@ -1,10 +1,10 @@
 
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from .models import Category, Item, ItemImage
 from PIL import Image
 from django.contrib import messages
 import imagehash
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Q, Count
@@ -360,3 +360,58 @@ def donation_failure(req, transaction_uuid):
         donation.payment_status = 'failed'
         donation.save()
     return render(req, 'donation_failure.html', {'transaction_uuid': transaction_uuid})
+
+
+from home.models import Report
+
+@login_required
+def report_detail(request):
+    item_id = request.GET.get('item_id')
+    item = get_object_or_404(Item, id=item_id) if item_id else None
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '').strip()
+        item_id_post = request.POST.get('item_id')
+        item = get_object_or_404(Item, id=item_id_post)
+
+        if not reason:
+            messages.error(request, "Please provide a reason for the report.")
+            return redirect(f"{request.path}?item_id={item_id_post}")
+
+        if Report.objects.filter(item=item, reported_by=request.user).exists():
+            messages.warning(request, "You have already reported this item.")
+            return redirect("item_details", id=item.id)
+
+        Report.objects.create(
+            item=item,
+            reported_by=request.user,
+            reason=reason
+        )
+        messages.success(request, "Report submitted successfully.")
+        return redirect("item_details", id=item.id)
+
+    return render(request, "report_detail.html", {"item": item})
+
+
+@login_required
+def item_reports(request):
+    reports = Report.objects.all().order_by('-created_at')
+    paginator = Paginator(reports, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "list-reports.html", {"reports": reports, "page_obj": page_obj})
+
+
+@login_required
+def delete_report(request, id):
+    report = get_object_or_404(Report, id=id)
+    if request.method == 'POST':
+        report.delete()
+        messages.success(request, "Report deleted successfully.")
+        return redirect("item_reports")
+    return redirect("item_reports")
+
+@login_required
+def admin_report_detail(request, id):
+    report = get_object_or_404(Report, id=id)
+    return render(request, "admin_report_detail.html", {"report": report})
