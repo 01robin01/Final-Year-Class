@@ -16,6 +16,83 @@ from django.conf import settings
 
 CustomUser = get_user_model()
 
+# def register_view(request):
+#     google_prefill = request.session.get("google_prefill", {})
+
+#     if request.method == 'POST':
+#         fn = request.POST.get('first_name') or google_prefill.get("first_name")
+#         ln = request.POST.get('last_name') or google_prefill.get("last_name")
+#         email = request.POST.get('email') or google_prefill.get("email")
+#         password = request.POST.get('password')
+#         password1 = request.POST.get('password1')
+#         phone = request.POST.get('phone')
+#         street_address = request.POST.get('street_address')
+#         city = request.POST.get('city')
+#         zip_code = request.POST.get('zip_code')
+#         secondary_contact = request.POST.get('secondary_contact')
+#         terms = request.POST.get('terms')
+
+#         if not email:
+#             messages.error(request, "Email is required.")
+#             return render(request, 'register.html', {"prefill": google_prefill})
+
+#         if CustomUser.objects.filter(email=email,is_active=True).exists():
+#             messages.error(request, "Email already exists.")
+#             return render(request, 'register.html', {"prefill": google_prefill})
+
+#         if password != password1:
+#             messages.error(request, "Passwords do not match.")
+#             return render(request, 'register.html', {"prefill": google_prefill})
+
+#         if not terms:
+#             messages.error(request, "You must agree to the terms and conditions.")
+#             return render(request, 'register.html', {"prefill": google_prefill})
+
+#         user = CustomUser(
+#             first_name=fn,
+#             last_name=ln,
+#             email=email,
+#             username=email,
+#             phone=phone,
+#             street_address=street_address,
+#             city=city,
+#             zip_code=zip_code,
+#             secondary_contact=secondary_contact,
+#         )
+#         user.set_password(password)
+#         user.is_active = False
+#         activation_token = str(uuid.uuid4().hex)
+#         user.activation_token = activation_token
+#         user = user.save()
+#         url = f"http://localhost:8000/account/activate/{activation_token}/"
+#         send_mail(
+#             'Activate Your Account',
+#             f'Please click the link to activate your account: {url}',
+#             settings.DEFAULT_FROM_EMAIL,
+#             [email],
+#             fail_silently=False,
+#         )
+#         messages.success(request, "Account created successfully. Please check your email to activate your account.")
+#         # Link Google account if present
+#         if google_prefill:
+#             SocialAccount.objects.create(
+#                 user=user,
+#                 provider=google_prefill["provider"],
+#                 uid=google_prefill["uid"],
+#                 extra_data={
+#                     "email": email,
+#                     "first_name": fn,
+#                     "last_name": ln,
+#                 }
+#             )
+#             request.session.pop("google_prefill", None)
+
+#         messages.success(request, "Account created successfully.")
+#         return redirect("account_login")
+
+#     # GET request → prefill form
+#     return render(request, 'register.html', {"prefill": google_prefill})
+
 def register_view(request):
     google_prefill = request.session.get("google_prefill", {})
 
@@ -36,7 +113,8 @@ def register_view(request):
             messages.error(request, "Email is required.")
             return render(request, 'register.html', {"prefill": google_prefill})
 
-        if CustomUser.objects.filter(email=email,is_active=True).exists():
+        # ✅ Fixed: Check ALL users, not just is_active=True
+        if CustomUser.objects.filter(email=email).exists():
             messages.error(request, "Email already exists.")
             return render(request, 'register.html', {"prefill": google_prefill})
 
@@ -48,6 +126,8 @@ def register_view(request):
             messages.error(request, "You must agree to the terms and conditions.")
             return render(request, 'register.html', {"prefill": google_prefill})
 
+        activation_token = str(uuid.uuid4().hex)
+
         user = CustomUser(
             first_name=fn,
             last_name=ln,
@@ -58,12 +138,14 @@ def register_view(request):
             city=city,
             zip_code=zip_code,
             secondary_contact=secondary_contact,
+            is_active=False,
+            activation_token=activation_token,
         )
         user.set_password(password)
-        user.is_active = False
-        activation_token = str(uuid.uuid4().hex)
-        user.activation_token = activation_token
-        user = user.save()
+
+        # ✅ Fixed: Don't assign user = user.save() since save() returns None
+        user.save()
+
         url = f"http://localhost:8000/account/activate/{activation_token}/"
         send_mail(
             'Activate Your Account',
@@ -72,8 +154,8 @@ def register_view(request):
             [email],
             fail_silently=False,
         )
-        messages.success(request, "Account created successfully. Please check your email to activate your account.")
-        # Link Google account if present
+
+        # ✅ Fixed: Link Google account if present (user object is valid now)
         if google_prefill:
             SocialAccount.objects.create(
                 user=user,
@@ -87,12 +169,12 @@ def register_view(request):
             )
             request.session.pop("google_prefill", None)
 
-        messages.success(request, "Account created successfully.")
+        # ✅ Fixed: Only one success message
+        messages.success(request, "Account created successfully. Please check your email to activate your account.")
         return redirect("account_login")
 
     # GET request → prefill form
     return render(request, 'register.html', {"prefill": google_prefill})
-
 
 def activate_user(request, token):
     try:
